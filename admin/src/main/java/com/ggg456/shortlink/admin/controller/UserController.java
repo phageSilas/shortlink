@@ -1,7 +1,9 @@
 package com.ggg456.shortlink.admin.controller;
 
+import cn.hutool.core.bean.BeanUtil;
 import com.ggg456.shortlink.admin.common.convention.result.Result;
 import com.ggg456.shortlink.admin.common.convention.result.Results;
+import com.ggg456.shortlink.admin.dto.resp.UserActualRespDTO;
 import com.ggg456.shortlink.admin.dto.resp.UserRespDTO;
 import com.ggg456.shortlink.admin.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +19,7 @@ public class UserController {
 
     /**
      * 获取用户信息
-     *
+     *手机号脱敏
      * @param username 用户名
      * @return 用户信息
      */
@@ -37,9 +39,16 @@ public class UserController {
         }*/
 
         return  Results.success(result);
+    }
 
-
-
-
+    /**
+     * 获取用户手机号无脱敏信息
+     * @param username 用户名
+     * @return 用户信息
+     */
+    @GetMapping("/api/short-link/admin/v1/actual/user/{username}")
+    public Result<UserActualRespDTO> getActualUserInfo(@PathVariable("username") String username) {
+       // UserActualRespDTO result = userService.getUserInfo(username);
+        return  Results.success(BeanUtil.toBean(userService.getUserInfo(username), UserActualRespDTO.class));
     }
 }
