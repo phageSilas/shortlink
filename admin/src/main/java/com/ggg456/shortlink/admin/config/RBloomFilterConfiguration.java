@@ -1,0 +1,19 @@
+package com.ggg456.shortlink.admin.config;
+
+import org.redisson.api.RBloomFilter;
+import org.redisson.api.RedissonClient;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+public class RBloomFilterConfiguration {
+
+
+    @Bean
+    public RBloomFilter<String> userRegisterCacheBloomFilter(RedissonClient redissonClient) {
+        RBloomFilter<String> bloomFilter = redissonClient.getBloomFilter("userRegisterCacheBloomFilter");// 创建布隆过滤器.name表示缓存名称
+        bloomFilter.tryInit(1000000, 0.01);//expectedInsertions表示预期插入的元素数量，falseProbability表示误判率
+        return bloomFilter;
+    }
+
+}

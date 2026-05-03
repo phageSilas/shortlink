@@ -5,7 +5,11 @@ import com.ggg456.shortlink.admin.common.convention.result.errorcode.IErrorCode;
 public enum UserErrorCodeEnum implements IErrorCode {
     USER_NULL("B000200", "用户不存在"),
 
-    USER_EXIST("B000201", "用户已存在");
+    USER_NAME_EXIST("B000201", "用户名已存在"),
+
+    USER_EXIST("B000202", "用户已存在"),
+
+    USER_SAVE_FAIL("B000203", "用户保存失败");
 
     private final String code;
 
