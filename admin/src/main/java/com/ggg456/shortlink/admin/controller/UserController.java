@@ -3,8 +3,11 @@ package com.ggg456.shortlink.admin.controller;
 import cn.hutool.core.bean.BeanUtil;
 import com.ggg456.shortlink.admin.common.convention.result.Result;
 import com.ggg456.shortlink.admin.common.convention.result.Results;
+import com.ggg456.shortlink.admin.dto.req.UserLoginReqDTO;
 import com.ggg456.shortlink.admin.dto.req.UserRegisterReqDTO;
+import com.ggg456.shortlink.admin.dto.req.UserUpdateReqDTO;
 import com.ggg456.shortlink.admin.dto.resp.UserActualRespDTO;
+import com.ggg456.shortlink.admin.dto.resp.UserLoginRespDTO;
 import com.ggg456.shortlink.admin.dto.resp.UserRespDTO;
 import com.ggg456.shortlink.admin.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -78,5 +81,31 @@ public class UserController {
         userService.register(reqParam);
         return Results.success();
     }
+
+    /**
+     * 根据用户名修改用户信息
+     */
+    @PutMapping("/api/short-link/admin/v1/user")
+    public Result<Void> update(@RequestBody UserUpdateReqDTO reqParam) {
+        userService.update(reqParam);
+        return Results.success();
+    }
+
+    /**
+     * 用户登录
+     */
+    @PostMapping("/api/short-link/admin/v1/user/login")
+    public Result<UserLoginRespDTO> login(@RequestBody UserLoginReqDTO reqParam) {
+        return Results.success(userService.login(reqParam));
+    }
+
+    /**
+     * 用户登出
+     */
+    @PostMapping("/api/short-link/admin/v1/user/logout")
+    public Result<Void> logout(@RequestBody UserLoginReqDTO reqParam) {
+        return Results.success(userService.logout(reqParam));
+    }
+
 
 }

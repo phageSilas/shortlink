@@ -2,6 +2,7 @@ package com.ggg456.shortlink.admin.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ggg456.shortlink.admin.common.constant.RedisCacheConstant;
@@ -9,7 +10,10 @@ import com.ggg456.shortlink.admin.common.convention.exception.ClientException;
 import com.ggg456.shortlink.admin.common.enums.UserErrorCodeEnum;
 import com.ggg456.shortlink.admin.dao.entity.UserDO;
 import com.ggg456.shortlink.admin.dao.mapper.UserMapper;
+import com.ggg456.shortlink.admin.dto.req.UserLoginReqDTO;
 import com.ggg456.shortlink.admin.dto.req.UserRegisterReqDTO;
+import com.ggg456.shortlink.admin.dto.req.UserUpdateReqDTO;
+import com.ggg456.shortlink.admin.dto.resp.UserLoginRespDTO;
 import com.ggg456.shortlink.admin.dto.resp.UserRespDTO;
 import com.ggg456.shortlink.admin.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -84,5 +88,36 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
         }
 
 
+    }
+
+    /**
+     * 根据用户名修改用户信息
+     *
+     * @param reqParam 更新参数
+     */
+    @Override
+    public void update(UserUpdateReqDTO reqParam) {
+        //TODO: 判断该用户是否为当前登录用户
+        LambdaUpdateWrapper<UserDO> updateWrapper = Wrappers.lambdaUpdate(UserDO.class)
+                .eq(UserDO::getUsername, reqParam.getUsername());
+        baseMapper.update(BeanUtil.toBean(reqParam, UserDO.class), updateWrapper);
+        //修改时间update_time会由MyMetaObjectHandlerl配置的mybatis-plus自动填充
+
+    }
+
+    /**
+     * 用户登录
+     * @param reqParam 登录参数
+     * @return 登录结果
+     */
+    @Override
+    public UserLoginRespDTO login(UserLoginReqDTO reqParam) {
+        //TODO: 登录逻辑
+        return null;
+    }
+
+    @Override
+    public Void logout(UserLoginReqDTO reqParam) {
+        return null;
     }
 }
