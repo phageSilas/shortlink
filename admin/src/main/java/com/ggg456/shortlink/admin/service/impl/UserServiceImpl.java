@@ -26,6 +26,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
     private final RBloomFilter<String> userRegisterCacheBloomFilter;
     private final  RedissonClient redissonClient;
 
+    /**
+     * 获取用户信息
+     *
+     * @param username 用户名
+     * @return 用户信息
+     */
     @Override
     public UserRespDTO getUserInfo(String username) {
         LambdaQueryWrapper<UserDO> queryWrapper = Wrappers.lambdaQuery(UserDO.class)
@@ -40,12 +46,21 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
 
     }
 
-    @Override
+    /**
+     * 校验用户名是否存在
+     *
+     * @param username 用户名
+     * @return true:存在 false:不存在
+     */
     public Boolean hasUsername(String username) {
         return !userRegisterCacheBloomFilter.contains(username);
     }
 
-    @Override
+    /**
+     * 用户注册
+     *
+     * @param reqParam 注册参数
+     */
     public void register(UserRegisterReqDTO reqParam) {
         if (userRegisterCacheBloomFilter.contains(reqParam.getUsername())) {
             throw new ClientException(UserErrorCodeEnum.USER_NAME_EXIST);
@@ -56,7 +71,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
             if (lock.tryLock()) {
 /*              lock()：阻塞等待，直到获取锁（可能导致大量线程等待）
                 tryLock()：立即返回，不等待（适合高并发场景）  */
-                int insert = baseMapper.insert(BeanUtil.toBean(reqParam, UserDO.class));//返回值为受影响的行数
+                int insert = baseMapper.insert(BeanUtil.toBean(reqParam, UserDO.class));//返回值为受影响的行数,mybatis-plus生成的主键是依据雪花算法生成的
                 if (insert != 1) {
                     throw new ClientException(UserErrorCodeEnum.USER_SAVE_FAIL);
                 }

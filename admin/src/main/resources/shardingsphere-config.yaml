@@ -1,0 +1,35 @@
+# 数据源集合
+dataSources:
+  ds_0: # 数据源名称,可以任意写; 其对应的真实数据源名称,以rules:tables:actualDataNNodes:ds_0.t_user_${0..15}中的t_user_${0..15}为准
+    dataSourceClassName: com.zaxxer.hikari.HikariDataSource # 数据源类名
+    driverClassName: com.mysql.cj.jdbc.Driver # 驱动类名
+    jdbcUrl: jdbc:mysql://localhost:3306/shortlink_db?characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&transformedBitIsBoolean=true&serverTimezone=GMT%2B8 # 数据库连接URL
+    username: root # 数据库用户名
+    password: 20050715.gao # 数据库密码
+
+rules:
+  - !SHARDING
+    tables:
+      t_user:
+        # 真实数据节点，比如数据库源以及数据库在数据库中真实存在的
+        actualDataNodes: ds_0.t_user_${0..15}
+        # 分表策略
+        tableStrategy: # 分表策略 #若要分库, 则为databaseStrategy,然后下面的配置差不多
+          # 用于单分片键的标准分片场景
+          standard:
+            # 分片键 - 就是根据这个字段的值进行哈希计算,因此相同 username 永远路由到同一张表
+            shardingColumn: username
+            # 分片算法，对应 rules[0].shardingAlgorithms
+            shardingAlgorithmName: user_table_hash_mod
+    # 分片算法
+    shardingAlgorithms:
+      # 数据表分片算法
+      user_table_hash_mod:
+        # 根据分片键 Hash 分片
+        type: HASH_MOD
+        # 分片数量
+        props:
+          sharding-count: 16
+# 展现逻辑 SQL & 真实 SQL
+props:
+  sql-show: true
