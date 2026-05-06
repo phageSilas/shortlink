@@ -8,4 +8,10 @@ import com.ggg456.shortlink.admin.dao.entity.GroupDO;
  * @author ggg456
  */
 public interface GroupService extends IService<GroupDO> {
+    /**
+     * 保存分组
+     * @param groupName 分组名称
+     * @return 保存结果
+     */
+    void saveGroup(String groupName);
 }
