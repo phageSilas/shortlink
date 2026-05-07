@@ -1,0 +1,83 @@
+package com.ggg456.shortlink.project.dao.entity;
+
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableName;
+import com.ggg456.shortlink.project.common.database.BaseDO;
+import lombok.Data;
+
+import java.util.Date;
+
+/**
+ * 短链接表实体
+ *
+ * @author ggg456
+ */
+@Data
+@TableName("t_link")
+public class ShortLinkDO extends BaseDO {
+
+    /**
+     * ID
+     */
+    private Long id;
+
+    /**
+     * 域名
+     */
+    private String domain;
+
+    /**
+     * 短链接
+     */
+    private String shortUri;
+
+    /**
+     * 完整短链接
+     */
+    private String fullShortUrl;
+
+    /**
+     * 原始链接
+     */
+    private String originUrl;
+
+    /**
+     * 点击量
+     */
+    private Integer clickNum;
+
+    /**
+     * 分组标识
+     */
+    private String gid;
+
+    /**
+     * 启用标识 0：未启用 1：已启用
+     */
+    private Integer enableStatus;
+
+    /**
+     * 创建类型 0：控制台 1：接口
+     */
+    private Integer createdType;
+
+    /**
+     * 有效期类型 0：永久有效 1：用户自定义
+     */
+    private Integer validDateType;
+
+    /**
+     * 有效期
+     */
+    private Date validDate;
+
+    /**
+     * 描述
+     */
+    @TableField("`describe`")
+    //Java实体中的字段名为 describe，但 DESCRIBE 是MySQL等数据库的保留关键字（用于显示表结构）
+    // `` 将数据库字段名包裹起来，告诉MyBatis-Plus在执行SQL操作时将该字段用反引号括起来，从而避免SQL语法错误
+    private String describe;
+
+
+}
