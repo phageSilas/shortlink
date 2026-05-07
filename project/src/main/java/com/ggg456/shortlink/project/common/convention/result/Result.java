@@ -1,4 +1,4 @@
-package com.ggg456.shortlink.project.convention.result;
+package com.ggg456.shortlink.project.common.convention.result;
 
 import lombok.Data;
 import lombok.experimental.Accessors;

@@ -1,7 +1,7 @@
-package com.ggg456.shortlink.project.convention.exception;
+package com.ggg456.shortlink.project.common.convention.exception;
 
-import com.ggg456.shortlink.project.convention.result.errorcode.BaseErrorCode;
-import com.ggg456.shortlink.project.convention.result.errorcode.IErrorCode;
+import com.ggg456.shortlink.project.common.convention.result.errorcode.BaseErrorCode;
+import com.ggg456.shortlink.project.common.convention.result.errorcode.IErrorCode;
 
 public class RemoteException extends AbstractException {
 

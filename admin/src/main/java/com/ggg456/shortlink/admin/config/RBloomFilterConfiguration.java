@@ -9,6 +9,11 @@ import org.springframework.context.annotation.Configuration;
 public class RBloomFilterConfiguration {
 
 
+    /**
+     * 布隆过滤器
+     * @param redissonClient
+     * @return
+     */
     @Bean
     public RBloomFilter<String> userRegisterCacheBloomFilter(RedissonClient redissonClient) {
         RBloomFilter<String> bloomFilter = redissonClient.getBloomFilter("userRegisterCacheBloomFilter");// 创建布隆过滤器.name表示缓存名称

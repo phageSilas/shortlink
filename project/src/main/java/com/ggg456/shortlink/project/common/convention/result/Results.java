@@ -1,7 +1,7 @@
-package com.ggg456.shortlink.project.convention.result;
+package com.ggg456.shortlink.project.common.convention.result;
 
-import com.ggg456.shortlink.project.convention.exception.AbstractException;
-import com.ggg456.shortlink.project.convention.result.errorcode.BaseErrorCode;
+import com.ggg456.shortlink.project.common.convention.exception.AbstractException;
+import com.ggg456.shortlink.project.common.convention.result.errorcode.BaseErrorCode;
 
 import java.util.Optional;
 

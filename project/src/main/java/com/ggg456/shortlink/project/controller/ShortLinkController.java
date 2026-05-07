@@ -1,7 +1,7 @@
 package com.ggg456.shortlink.project.controller;
 
-import com.ggg456.shortlink.project.convention.result.Result;
-import com.ggg456.shortlink.project.convention.result.Results;
+import com.ggg456.shortlink.project.common.convention.result.Result;
+import com.ggg456.shortlink.project.common.convention.result.Results;
 import com.ggg456.shortlink.project.dto.req.ShortLinkCreateReqDTO;
 import com.ggg456.shortlink.project.dto.resp.ShortLinkCreateRespDTO;
 import com.ggg456.shortlink.project.service.ShortLinkService;

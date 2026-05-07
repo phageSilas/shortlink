@@ -1,4 +1,4 @@
-package com.ggg456.shortlink.project.convention.result.errorcode;
+package com.ggg456.shortlink.project.common.convention.result.errorcode;
 
 /**
  * 平台错误码
