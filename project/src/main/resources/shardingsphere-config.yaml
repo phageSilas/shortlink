@@ -12,48 +12,48 @@ rules:
     tables:
       t_link:
         # 真实数据节点，比如数据库源以及数据库在数据库中真实存在的
-        actualDataNodes: ds_0.t_link
-#       # 分表策略
-#        tableStrategy: # 分表策略 #若要分库, 则为databaseStrategy,然后下面的配置差不多
-#          # 用于单分片键的标准分片场景
-#          standard:
-#            # 分片键 - 就是根据这个字段的值进行哈希计算,因此相同 username 永远路由到同一张表
-#            shardingColumn: gid
-#            # 分片算法，对应 rules[0].shardingAlgorithms
-#            shardingAlgorithmName: link_table_hash_mod
-#    # 分片算法
-#    shardingAlgorithms:
-#      # 数据表分片算法
-#      link_table_hash_mod:
-#        # 根据分片键 Hash 分片
-#        type: HASH_MOD
-#        # 分片数量
-#        props:
-#          sharding-count: 16
+        actualDataNodes: ds_0.t_link_${0..15}
+       # 分表策略
+        tableStrategy: # 分表策略 #若要分库, 则为databaseStrategy,然后下面的配置差不多
+          # 用于单分片键的标准分片场景
+          standard:
+            # 分片键 - 就是根据这个字段的值进行哈希计算,因此相同 gid 永远路由到同一张表
+            shardingColumn: gid
+            # 分片算法，对应 rules[0].shardingAlgorithms
+            shardingAlgorithmName: link_table_hash_mod
+    # 分片算法
+    shardingAlgorithms:
+      # 数据表分片算法
+      link_table_hash_mod:
+        # 根据分片键 Hash 分片
+        type: HASH_MOD
+        # 分片数量
+        props:
+          sharding-count: 16
 
-  - !ENCRYPT # 加密规则 ShardingSphere 的加密规则只对新增数据生效，历史数据不会自动加密; 在查询时自动解密，应用程序读取到的是解密后的明文数据。
-    tables:
-      t_user: # 需要加密的表集合
-        columns: # 用户表中哪些字段需要进行加密
-          phone: # 逻辑字段,不影响数据库字段,可以自定义,以cipherColumn为准
-            cipherColumn: phone # 加密字段 ,真正的字段名称
-            encryptorName: aes_encryptor # 加密算法名称 , 对应 encryptors
-          password:
-            cipherColumn: password # 加密字段
-            encryptorName: aes_encryptor # 加密算法名称 , 对应 encryptors
-          mail:
-            cipherColumn: mail
-            encryptorName: aes_encryptor
-
-
-        # 是否按照密文字段查询
-        queryWithCipherColumn: true
-
-    encryptors: # 加密算法
-      aes_encryptor: # AES加密算法 ,可以自定义名称
-        type: AES
-        props: # AES密钥
-          aes-key-value: d6oadClrrb9A3GWo
+#  - !ENCRYPT # 加密规则 ShardingSphere 的加密规则只对新增数据生效，历史数据不会自动加密; 在查询时自动解密，应用程序读取到的是解密后的明文数据。
+#    tables:
+#      t_user: # 需要加密的表集合
+#        columns: # 用户表中哪些字段需要进行加密
+#          phone: # 逻辑字段,不影响数据库字段,可以自定义,以cipherColumn为准
+#            cipherColumn: phone # 加密字段 ,真正的字段名称
+#            encryptorName: aes_encryptor # 加密算法名称 , 对应 encryptors
+#          password:
+#            cipherColumn: password # 加密字段
+#            encryptorName: aes_encryptor # 加密算法名称 , 对应 encryptors
+#          mail:
+#            cipherColumn: mail
+#            encryptorName: aes_encryptor
+#
+#
+#        # 是否按照密文字段查询
+#        queryWithCipherColumn: true
+#
+#    encryptors: # 加密算法
+#      aes_encryptor: # AES加密算法 ,可以自定义名称
+#        type: AES
+#        props: # AES密钥
+#          aes-key-value: d6oadClrrb9A3GWo
 
 
 # 展现逻辑 SQL & 真实 SQL
