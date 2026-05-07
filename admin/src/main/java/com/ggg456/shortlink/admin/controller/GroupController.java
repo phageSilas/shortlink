@@ -3,6 +3,7 @@ package com.ggg456.shortlink.admin.controller;
 import com.ggg456.shortlink.admin.common.convention.result.Result;
 import com.ggg456.shortlink.admin.common.convention.result.Results;
 import com.ggg456.shortlink.admin.dto.req.ShortLinkGroupSaveReqDTO;
+import com.ggg456.shortlink.admin.dto.req.ShortLinkGroupSortReqDTO;
 import com.ggg456.shortlink.admin.dto.req.ShortLinkGroupUpdateReqDTO;
 import com.ggg456.shortlink.admin.dto.resp.ShortLinkGroupRespDTO;
 import com.ggg456.shortlink.admin.service.GroupService;
@@ -53,4 +54,11 @@ public class GroupController {
         groupService.deleteGroup(gid);
         return Results.success();
     }
+
+    @PostMapping("/api/short-link/admin/v1/group/sort")
+    public Result<Void> sortGroupSort(@RequestBody List<ShortLinkGroupSortReqDTO> groupList) {
+        groupService.sortGroupSort(groupList);
+        return Results.success();
+    }
+
 }

@@ -2,6 +2,7 @@ package com.ggg456.shortlink.admin.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.ggg456.shortlink.admin.dao.entity.GroupDO;
+import com.ggg456.shortlink.admin.dto.req.ShortLinkGroupSortReqDTO;
 import com.ggg456.shortlink.admin.dto.req.ShortLinkGroupUpdateReqDTO;
 import com.ggg456.shortlink.admin.dto.resp.ShortLinkGroupRespDTO;
 
@@ -36,4 +37,9 @@ public interface GroupService extends IService<GroupDO> {
      * @param gid 分组id
      */
     void deleteGroup(String gid);
+
+    /**
+     * 排序分组
+     */
+    void sortGroupSort(List<ShortLinkGroupSortReqDTO> groupList);
 }
