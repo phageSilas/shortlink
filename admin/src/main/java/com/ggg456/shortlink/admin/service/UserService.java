@@ -54,4 +54,12 @@ public interface UserService {
      * @return 登出结果
      */
     Void logout(UserLoginReqDTO reqParam);
+
+    /**
+     * 检查用户是否登录
+     *
+     * @param token 用户token
+     * @return true:已登录 false:未登录
+     */
+    Boolean checkLogin(String userName, String token);
 }

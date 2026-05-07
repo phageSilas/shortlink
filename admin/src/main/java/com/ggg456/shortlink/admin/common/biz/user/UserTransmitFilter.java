@@ -1,7 +1,7 @@
-//TODO: 待完善
-/*
 package com.ggg456.shortlink.admin.common.biz.user;
 
+import com.alibaba.fastjson2.JSON;
+import com.ggg456.shortlink.admin.common.constant.RedisCacheConstant;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -9,12 +9,9 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 
 import java.io.IOException;
 
-*/
 /**
  * 用户信息传输过滤器
- *
- *//*
-
+ */
 @RequiredArgsConstructor
 public class UserTransmitFilter implements Filter {
 
@@ -23,23 +20,23 @@ public class UserTransmitFilter implements Filter {
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
         HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
-        String userName = httpServletRequest.getHeader("username");
         String token = httpServletRequest.getHeader("token");
+        String username = httpServletRequest.getHeader("username");
 
-        Object userInfoJsonStr = stringRedisTemplate.opsForHash().get("login_" + token);
+        if (token != null && !token.isEmpty()) {
+            Object userInfoJsonStr = stringRedisTemplate.opsForHash().get(
+                    RedisCacheConstant.USER_LOGIN_KEY +username, token);
 
-            UserInfoDTO userInfoDTO = UserInfoDTO.builder()
-                    .userId(userId)
-                    .username(userName)
-                    .realName(realName)
-                    .token(token)
-                    .build();
-            UserContext.setUser(userInfoDTO);
+            if (userInfoJsonStr != null) {
+                UserInfoDTO userInfoDTO = JSON.parseObject(userInfoJsonStr.toString(), UserInfoDTO.class);
+                UserContext.setUser(userInfoDTO);
+            }
         }
+
         try {
             filterChain.doFilter(servletRequest, servletResponse);
         } finally {
             UserContext.removeUser();
         }
     }
-}*/
+}

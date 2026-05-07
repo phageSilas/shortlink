@@ -7,10 +7,7 @@ import com.ggg456.shortlink.admin.dto.req.ShortLinkGroupUpdateReqDTO;
 import com.ggg456.shortlink.admin.dto.resp.ShortLinkGroupRespDTO;
 import com.ggg456.shortlink.admin.service.GroupService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -42,10 +39,18 @@ public class GroupController {
      * 修改分组
      * @param reqParam 修改分组参数
      */
-    @PostMapping("/api/short-link/admin/v1/group")
+    @PutMapping("/api/short-link/admin/v1/group")
     public Result<Void> updateGroup(@RequestBody ShortLinkGroupUpdateReqDTO reqParam) {
         groupService.updateGroup(reqParam);
         return Results.success();
     }
-
+    /**
+     * 删除分组
+     * @param gid 分组id
+     */
+    @DeleteMapping("/api/short-link/admin/v1/group")
+    public Result<Void> deleteGroup(@RequestParam String gid) {
+        groupService.deleteGroup(gid);
+        return Results.success();
+    }
 }

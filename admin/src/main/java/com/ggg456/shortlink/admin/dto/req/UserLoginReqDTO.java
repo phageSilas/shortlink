@@ -20,4 +20,8 @@ public class UserLoginReqDTO {
      * 验证码
      */
     private String code;
+    /**
+     * Token（用于登出）
+     */
+    private String token;
 }

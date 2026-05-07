@@ -1,10 +1,12 @@
 package com.ggg456.shortlink.admin.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import com.alibaba.fastjson2.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.ggg456.shortlink.admin.common.biz.user.UserInfoDTO;
 import com.ggg456.shortlink.admin.common.constant.RedisCacheConstant;
 import com.ggg456.shortlink.admin.common.convention.exception.ClientException;
 import com.ggg456.shortlink.admin.common.enums.UserErrorCodeEnum;
@@ -21,14 +23,19 @@ import org.redisson.api.RBloomFilter;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.BeanUtils;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
+
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements UserService {
 
     private final RBloomFilter<String> userRegisterCacheBloomFilter;
-    private final  RedissonClient redissonClient;
+    private final RedissonClient redissonClient;
+    private final StringRedisTemplate stringRedisTemplate;
 
     /**
      * 获取用户信息
@@ -112,12 +119,59 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
      */
     @Override
     public UserLoginRespDTO login(UserLoginReqDTO reqParam) {
-        //TODO: 登录逻辑
-        return null;
+        LambdaQueryWrapper<UserDO> queryWrapper = Wrappers.lambdaQuery(UserDO.class)
+                .eq(UserDO::getUsername, reqParam.getUsername())
+                .eq(UserDO::getPassword, reqParam.getPassword())
+                .eq(UserDO::getDelFlag, 0);
+        UserDO userDO = baseMapper.selectOne(queryWrapper);
+        if (userDO == null) {
+            throw new ClientException(UserErrorCodeEnum.USER_LOGIN_FAIL);
+        }
+        Boolean hasLogin = stringRedisTemplate.hasKey(RedisCacheConstant.USER_LOGIN_KEY + reqParam.getUsername());
+        if (hasLogin != null && hasLogin) {
+            throw new ClientException(UserErrorCodeEnum.USER_HAS_LOGINED);
+        }
+
+        String token = UUID.randomUUID().toString();
+        UserInfoDTO userInfoDTO = UserInfoDTO.builder()
+                .userId(String.valueOf(userDO.getId()))
+                .username(userDO.getUsername())
+                .realName(userDO.getRealName())
+                .token(token)
+                .build();
+
+        stringRedisTemplate.opsForHash().put(
+                RedisCacheConstant.USER_LOGIN_KEY + reqParam.getUsername(), token, JSON.toJSONString(userInfoDTO));
+        stringRedisTemplate.expire(RedisCacheConstant.USER_LOGIN_KEY + token, 30, TimeUnit.DAYS);
+
+        return new UserLoginRespDTO(token);//UserLoginRespDTO中需要加上@AllArgsConstructor,@NoArgsConstructor
     }
 
+    /**
+     * 检查用户是否登录
+     * @param token 登录凭证
+     * @return true:已登录 false:未登录
+     */
+    @Override
+    public Boolean checkLogin(String userName,String token) {
+       Object tokenValue = stringRedisTemplate.opsForHash().get(
+                RedisCacheConstant.USER_LOGIN_KEY + userName, token);
+        return tokenValue != null && tokenValue.equals(token);
+    }
+    /**
+     * 用户登出
+     * @param reqParam 登出参数
+     * @return 无
+     */
     @Override
     public Void logout(UserLoginReqDTO reqParam) {
-        return null;
+        String token = reqParam.getToken();
+        if (token != null) {
+            stringRedisTemplate.delete(RedisCacheConstant.USER_LOGIN_KEY + token);
+            return null;
+        }
+        throw new ClientException("USER_LOGOUT_FAIL");
     }
+
+
 }

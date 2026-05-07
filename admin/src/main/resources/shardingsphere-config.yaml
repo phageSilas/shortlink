@@ -3,7 +3,7 @@ dataSources:
   ds_0: # 数据源名称,可以任意写; 其对应的真实数据源名称,以rules:tables:actualDataNNodes:ds_0.t_user_${0..15}中的t_user_${0..15}为准
     dataSourceClassName: com.zaxxer.hikari.HikariDataSource # 数据源类名
     driverClassName: com.mysql.cj.jdbc.Driver # 驱动类名
-    jdbcUrl: jdbc:mysql://localhost:3306/shortlink_db?characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&transformedBitIsBoolean=true&serverTimezone=GMT%2B8 # 数据库连接URL
+    jdbcUrl: jdbc:mysql://localhost:3306/shortlink_db?characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&transformedBitIsBoolean=true&serverTimezone=GMT%2B8&allowPublicKeyRetrieval=true&useSSL=false # 数据库连接URL
     username: root # 数据库用户名
     password: 20050715.gao # 数据库密码
 
