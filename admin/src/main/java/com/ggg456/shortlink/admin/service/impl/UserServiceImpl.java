@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.ggg456.shortlink.admin.common.biz.user.UserContext;
 import com.ggg456.shortlink.admin.common.biz.user.UserInfoDTO;
 import com.ggg456.shortlink.admin.common.constant.RedisCacheConstant;
 import com.ggg456.shortlink.admin.common.convention.exception.ClientException;
@@ -45,6 +46,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
      */
     @Override
     public UserRespDTO getUserInfo(String username) {
+        String currentUsername = UserContext.getUsername();
+        if (!currentUsername.equals(username)) {
+            throw new ClientException(UserErrorCodeEnum.USER_TOKEN_FAIL);
+        }
         LambdaQueryWrapper<UserDO> queryWrapper = Wrappers.lambdaQuery(UserDO.class)
                 .eq(UserDO::getUsername, username);
         UserDO userDO = baseMapper.selectOne(queryWrapper);//注意UserDO加上@Data
@@ -129,7 +134,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
         }
         Boolean hasLogin = stringRedisTemplate.hasKey(RedisCacheConstant.USER_LOGIN_KEY + reqParam.getUsername());
         if (hasLogin != null && hasLogin) {
-            throw new ClientException(UserErrorCodeEnum.USER_HAS_LOGINED);
+            throw new ClientException(UserErrorCodeEnum. USER_EXIST);
         }
 
         String token = UUID.randomUUID().toString();

@@ -3,6 +3,9 @@ package com.ggg456.shortlink.admin.common.enums;
 import com.ggg456.shortlink.admin.common.convention.result.errorcode.IErrorCode;
 
 public enum UserErrorCodeEnum implements IErrorCode {
+    USER_TOKEN_FAIL("A000200", "用户token验证失败"),
+
+
     USER_NULL("B000200", "用户不存在"),
 
     USER_NAME_EXIST("B000201", "用户名已存在"),
@@ -11,9 +14,7 @@ public enum UserErrorCodeEnum implements IErrorCode {
 
     USER_SAVE_FAIL("B000203", "用户保存失败"),
 
-    USER_LOGIN_FAIL("B000204", "用户名或密码错误"),
-
-    USER_HAS_LOGINED("B000205", "用户已登录"),;
+    USER_LOGIN_FAIL("B000204", "用户名或密码错误");
 
 
 
