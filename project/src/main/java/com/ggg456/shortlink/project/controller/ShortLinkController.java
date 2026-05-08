@@ -5,6 +5,7 @@ import com.ggg456.shortlink.project.common.convention.result.Result;
 import com.ggg456.shortlink.project.common.convention.result.Results;
 import com.ggg456.shortlink.project.dto.req.ShortLinkCreateReqDTO;
 import com.ggg456.shortlink.project.dto.req.ShortLinkPageReqDTO;
+import com.ggg456.shortlink.project.dto.req.ShortLinkUpdateReqDTO;
 import com.ggg456.shortlink.project.dto.resp.ShortLinkCreateRespDTO;
 import com.ggg456.shortlink.project.dto.resp.ShortLinkPageRespDTO;
 import com.ggg456.shortlink.project.service.ShortLinkService;
@@ -37,6 +38,12 @@ public class ShortLinkController {
     @GetMapping("/api/short-link/admin/v1/page")
     public Result<IPage<ShortLinkPageRespDTO>> pageShortLink(ShortLinkPageReqDTO reqParam) {
         return Results.success(shortLinkService.pageShortLink(reqParam));
+    }
+
+    @PostMapping("/api/short-link/admin/v1/update")
+    public Result<Void> updateShortLink(@RequestBody ShortLinkUpdateReqDTO reqParam) {
+        shortLinkService.updateShortLink(reqParam);
+        return Results.success();
     }
 
 

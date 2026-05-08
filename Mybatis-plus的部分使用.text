@@ -1,0 +1,25 @@
+(1)eq 表示查询条件,等同于where
+    LambdaQueryWrapper<UserDO> queryWrapper = Wrappers.lambdaQuery(UserDO.class)
+                    .eq(UserDO::getUsername, username);
+    上面的效果是: select * from user where username = ?
+
+(2)set 表示更新条件
+            Wrapper<ShortLinkDO> updateWrapper = Wrappers.lambdaUpdate(ShortLinkDO.class)
+            .set(Objects.equals(reqParam.getValidDateType(), VailDateTypeEnum.PERMANENT.getType()), ShortLinkDO::getValidDate, 0);
+    set的第一个参数是判断条件,如果第一个参数为true,则执行后面两个参数:要set的字段和set的值
+
+(3)连续的eq间使用and连接
+    LambdaQueryWrapper<UserDO> queryWrapper = Wrappers.lambdaQuery(UserDO.class)
+            .eq(UserDO::getUsername, username)
+            .eq(UserDO::getPassword, password);
+            .set(UserDO::getSex, Sex);
+    以上的效果是:两个eq条件满足后,便对Sex字段进行更新
+
+(4)在实体类的属性上使用@TableField(fill=FieldFill.INSERT)注解,表示该字段在插入时自动填充
+        @TableField(fill = FieldFill.INSERT_UPDATE),表示该字段在插入和更新时自动填充
+
+    注意配置自动填充配置类
+
+(5)update
+ baseMapper.update(updateShortLinkDO, updateWrapperGidIsEqual)
+ 满足第二个参数的条件,则更新第一个参数

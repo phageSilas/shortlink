@@ -7,10 +7,12 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ggg456.shortlink.project.common.convention.exception.ServiceException;
+import com.ggg456.shortlink.project.common.enums.VailDateTypeEnum;
 import com.ggg456.shortlink.project.dao.entity.ShortLinkDO;
 import com.ggg456.shortlink.project.dao.mapper.LinkMapper;
 import com.ggg456.shortlink.project.dto.req.ShortLinkCreateReqDTO;
 import com.ggg456.shortlink.project.dto.req.ShortLinkPageReqDTO;
+import com.ggg456.shortlink.project.dto.req.ShortLinkUpdateReqDTO;
 import com.ggg456.shortlink.project.dto.resp.ShortLinkCreateRespDTO;
 import com.ggg456.shortlink.project.dto.resp.ShortLinkPageRespDTO;
 import com.ggg456.shortlink.project.service.ShortLinkService;
@@ -20,6 +22,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RBloomFilter;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
+
+import java.util.Objects;
 
 @Service
 @Slf4j
@@ -95,6 +99,61 @@ public class ShortLinkServiceImpl extends ServiceImpl<LinkMapper, ShortLinkDO> i
                 .orderByDesc(ShortLinkDO::getCreateTime);
         IPage<ShortLinkDO> resultPage = baseMapper.selectPage(reqParam, queryWrapper);
       return  resultPage.convert(each -> BeanUtil.toBean(each, ShortLinkPageRespDTO.class));
+
+    }
+
+    /**
+     * 更新短链接
+     * @param reqParam
+     * @return
+     */
+    @Override
+    public void updateShortLink(ShortLinkUpdateReqDTO reqParam) {
+        LambdaQueryWrapper<ShortLinkDO> queryWrapper = Wrappers.lambdaQuery(ShortLinkDO.class)
+                .eq(ShortLinkDO::getGid, reqParam.getGid())
+                .eq(ShortLinkDO::getFullShortUrl, reqParam.getFullShortUrl())
+                /*.eq(ShortLinkDO::getDelFlag, 0)
+                .eq(ShortLinkDO::getEnableStatus, 0)*/;
+        ShortLinkDO hasShortLinkDO = baseMapper.selectOne(queryWrapper); //根据前端传进来的数据查到要修改的目标链接
+
+        if (hasShortLinkDO == null) {
+            throw new ServiceException("该短链接不存在");
+        }
+        // 将前端传进来的数据更新到数据库中
+        ShortLinkDO updateShortLinkDO = ShortLinkDO.builder() //注意:gid不在本次修改数据中
+                .domain(hasShortLinkDO.getDomain()) //不允许修改域名
+                .shortUri(hasShortLinkDO.getShortUri()) //不允许修改短链接后缀
+                .clickNum(hasShortLinkDO.getClickNum()) //不允许修改点击次数
+
+                .originUrl(reqParam.getOriginUrl()) //允许修改原链接
+                .validDateType(reqParam.getValidDateType()) //允许修改有效期类型
+                .validDate(reqParam.getValidDate()) //允许修改有效期
+                .describe(reqParam.getDescribe()) //允许修改描述
+                .enableStatus(0)
+                .build();
+
+        if (Objects.equals(hasShortLinkDO.getGid(), reqParam.getGid())) { //如果前端传入的gid和数据库中的gid一致,则直接修改其他数据
+            Wrapper<ShortLinkDO> updateWrapperGidIsEqual = Wrappers.lambdaUpdate(ShortLinkDO.class)
+                    .eq(ShortLinkDO::getGid, reqParam.getGid())
+                    .eq(ShortLinkDO::getFullShortUrl, reqParam.getFullShortUrl())
+                    //.eq(ShortLinkDO::getDelFlag, 0)
+                    //.eq(ShortLinkDO::getEnableStatus, 0)
+                    .set(Objects.equals(reqParam.getValidDateType(), VailDateTypeEnum.PERMANENT.getType()), ShortLinkDO::getValidDate, 0);
+
+            baseMapper.update(updateShortLinkDO, updateWrapperGidIsEqual);
+
+        } else { //如果前端传入的gid和数据库中的gid不一致,则先删除数据库中的数据,再插入新的数据
+            Wrapper<ShortLinkDO> updateWrapperGidNotEqual = Wrappers.lambdaUpdate(ShortLinkDO.class)
+                    .eq(ShortLinkDO::getGid, reqParam.getGid())
+                    .eq(ShortLinkDO::getFullShortUrl, reqParam.getFullShortUrl())
+                    .eq(ShortLinkDO::getDelFlag, 0)
+                    .eq(ShortLinkDO::getEnableStatus, 0);
+
+            baseMapper.delete(updateWrapperGidNotEqual);//删除对应的字段
+            updateShortLinkDO.setGid(reqParam.getGid());//设置新的gid
+            baseMapper.update(updateShortLinkDO, updateWrapperGidNotEqual);//更新数据库中字段
+        }
+
 
     }
 

@@ -48,6 +48,8 @@ public class ShortLinkCreateReqDTO {
      * 有效期
      */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    //当把这个 Java 对象转换为 JSON 字符串时，Date 类型的 validDate 会被格式化为该格式
+    //当前端发送如下 JSON 数据到后端时：Spring MVC 会使用这个注解指定的格式将字符串解析为 Date 对象。
     private Date validDate;
 
     /**
