@@ -26,6 +26,7 @@ import static com.ggg456.shortlink.admin.common.enums.UserErrorCodeEnum.USER_TOK
 
 /**
  * 注意: 全局异常拦截器 @RestControllerAdvice 不能直接捕获 Filter 也就是该类throw 抛出的异常
+ * 且该拦截器只在本模块生效
  */
 @RequiredArgsConstructor
 @Slf4j

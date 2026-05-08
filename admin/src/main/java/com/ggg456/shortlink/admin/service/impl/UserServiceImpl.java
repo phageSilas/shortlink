@@ -147,7 +147,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
 
         stringRedisTemplate.opsForHash().put(
                 RedisCacheConstant.USER_LOGIN_KEY + reqParam.getUsername(), token, JSON.toJSONString(userInfoDTO));
-        stringRedisTemplate.expire(RedisCacheConstant.USER_LOGIN_KEY + token, 30, TimeUnit.DAYS);
+        stringRedisTemplate.expire(RedisCacheConstant.USER_LOGIN_KEY + reqParam.getUsername(), 30, TimeUnit.DAYS);
 
         return new UserLoginRespDTO(token);//UserLoginRespDTO中需要加上@AllArgsConstructor,@NoArgsConstructor
     }
@@ -172,7 +172,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
     public Void logout(UserLoginReqDTO reqParam) {
         String token = reqParam.getToken();
         if (token != null) {
-            stringRedisTemplate.delete(RedisCacheConstant.USER_LOGIN_KEY + token);
+            stringRedisTemplate.opsForHash().delete(RedisCacheConstant.USER_LOGIN_KEY + reqParam.getUsername(), token);
             return null;
         }
         throw new ClientException("USER_LOGOUT_FAIL");
