@@ -35,6 +35,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @Slf4j
@@ -206,11 +207,16 @@ public class ShortLinkServiceImpl extends ServiceImpl<LinkMapper, ShortLinkDO> i
                    response.sendRedirect(originalUrl);
                    return;
                }
+               boolean isContains = shortUriCreateCachePenetrationBloomFilter.contains(fullShortUri);
+               if (!isContains) {
+                   return;
+               }
 
                LambdaQueryWrapper<ShortLinkGotoDO> linkGotoQueryWrapper = Wrappers.lambdaQuery(ShortLinkGotoDO.class)
                        .eq(ShortLinkGotoDO::getFullShortUrl, fullShortUri);
                ShortLinkGotoDO shortLinkGotoDO = shortLinkGotoMapper.selectOne(linkGotoQueryWrapper); //根据传进来的完整短链接在Goto表中查询对应的行
                if (shortLinkGotoDO == null) {
+                   stringRedisTemplate .opsForValue().set(String.format(RedisKeyConstant.GOTO_SHORT_LINK_KEY, fullShortUri), "-",30, TimeUnit.MINUTES);//在数据库未查询到对应的链接,将该次请求缓存进Redis,且值为"-"(可以认为是空值),防止缓存穿透
                    throw new ServiceException("短链接不存在");
                }
 
