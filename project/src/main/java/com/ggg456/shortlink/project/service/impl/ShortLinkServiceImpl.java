@@ -34,6 +34,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -212,7 +213,10 @@ public class ShortLinkServiceImpl extends ServiceImpl<LinkMapper, ShortLinkDO> i
                    response.sendRedirect(originalUrl);
                    return;
                }
+
+               //检查布隆过滤器中是否有该链接,若不包含,则证明该链接一定不存在,直接返回
                boolean isContains = shortUriCreateCachePenetrationBloomFilter.contains(fullShortUrl);
+               //注意布隆过滤器中的元素无法删除(删除成本太高)
                if (!isContains) {
                    return;
                }
@@ -233,7 +237,11 @@ public class ShortLinkServiceImpl extends ServiceImpl<LinkMapper, ShortLinkDO> i
                ShortLinkDO shortLinkDO = baseMapper.selectOne(queryWrapper);
 
                if (shortLinkDO != null) { //如果数据库中存在这条数据,并且经过第一个if判断后,可知redis中没有该数据,那么则将原始链接写入Redis缓存中,并重定向
-                   stringRedisTemplate.opsForValue().set(String.format(RedisKeyConstant.GOTO_SHORT_LINK_KEY, fullShortUrl), shortLinkDO.getOriginUrl());
+                   if (shortLinkDO.getValidDate() != null && shortLinkDO.getValidDate().before(new Date())) { //如果该短链接的生效时间不为空且该时间小于当前时间(蔽日有效期2026.1 是before 2026.5的),则判断该短链接已失效,返回"短链接已失效"
+                       stringRedisTemplate .opsForValue().set(String.format(RedisKeyConstant.GOTO_SHORT_LINK_KEY, fullShortUrl), "-",30, TimeUnit.MINUTES);//将该失效的链接也缓存个空值,将该次请求缓存进Redis,且值为"-"(可以认为是空值),防止缓存穿透
+                        return;
+                   }
+                   stringRedisTemplate.opsForValue().set(String.format(RedisKeyConstant.GOTO_SHORT_LINK_KEY, fullShortUrl), shortLinkDO.getOriginUrl(), getLinkCacheValidTime(shortLinkDO.getValidDate()), TimeUnit.MILLISECONDS);
                    response.sendRedirect(shortLinkDO.getOriginUrl());
                }
            } finally {
