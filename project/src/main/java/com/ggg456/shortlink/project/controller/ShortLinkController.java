@@ -9,11 +9,12 @@ import com.ggg456.shortlink.project.dto.req.ShortLinkUpdateReqDTO;
 import com.ggg456.shortlink.project.dto.resp.ShortLinkCreateRespDTO;
 import com.ggg456.shortlink.project.dto.resp.ShortLinkPageRespDTO;
 import com.ggg456.shortlink.project.service.ShortLinkService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
 
 @RestController
 @RequiredArgsConstructor
@@ -40,10 +41,26 @@ public class ShortLinkController {
         return Results.success(shortLinkService.pageShortLink(reqParam));
     }
 
+    /**
+     * 修改短链接
+     * @param reqParam
+     * @return
+     */
     @PostMapping("/api/short-link/admin/v1/update")
     public Result<Void> updateShortLink(@RequestBody ShortLinkUpdateReqDTO reqParam) {
         shortLinkService.updateShortLink(reqParam);
         return Results.success();
+    }
+
+    /**
+     * 短链接跳转原始链接
+     * @param shortUrl
+     * @param request
+     * @param response
+     */
+    @GetMapping("/{short-url}")
+    public void restoreUrl(@PathVariable("short-url") String shortUrl, HttpServletRequest request, HttpServletResponse response) throws IOException {
+      shortLinkService.restoreUrl(shortUrl, request, response);
     }
 
 

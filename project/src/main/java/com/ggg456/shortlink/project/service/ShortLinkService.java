@@ -8,6 +8,10 @@ import com.ggg456.shortlink.project.dto.req.ShortLinkPageReqDTO;
 import com.ggg456.shortlink.project.dto.req.ShortLinkUpdateReqDTO;
 import com.ggg456.shortlink.project.dto.resp.ShortLinkCreateRespDTO;
 import com.ggg456.shortlink.project.dto.resp.ShortLinkPageRespDTO;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+import java.io.IOException;
 
 public interface ShortLinkService extends IService<ShortLinkDO> {
     /**
@@ -35,4 +39,12 @@ public interface ShortLinkService extends IService<ShortLinkDO> {
      * @return
      */
     void updateShortLink(ShortLinkUpdateReqDTO reqParam);
+
+    /**
+     * 短链接跳转原始链接
+     * @param shortUrl
+     * @param request
+     * @param response
+     */
+    void restoreUrl(String shortUrl, HttpServletRequest request, HttpServletResponse response) throws IOException;
 }
