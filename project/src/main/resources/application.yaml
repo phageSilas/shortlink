@@ -24,3 +24,9 @@ spring:
       port: 6379
       # password: #注意新Redisson3.16之后,若密码为空,则不能配置此项
       database: 2 #使用数据库
+
+  # thymeleaf
+  mvc:
+    view:
+      prefix: /templates/
+      suffix: .html
