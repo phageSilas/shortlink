@@ -37,6 +37,8 @@ import java.io.IOException;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
+import static com.ggg456.shortlink.project.toolkit.LinkUtil.getLinkCacheValidTime;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -95,6 +97,9 @@ public class ShortLinkServiceImpl extends ServiceImpl<LinkMapper, ShortLinkDO> i
 
 
         }
+
+        //将新建的短链接缓存到Redis中(缓存预热)
+        stringRedisTemplate.opsForValue().set(String.format(RedisKeyConstant.GOTO_SHORT_LINK_KEY, fullShortUrl), reqParam.getOriginUrl(), getLinkCacheValidTime(reqParam.getValidDate()), TimeUnit.MILLISECONDS);
 
         shortUriCreateCachePenetrationBloomFilter.add(shortLinkDO.getShortUri()); // 添加到布隆过滤器中
 
@@ -188,9 +193,9 @@ public class ShortLinkServiceImpl extends ServiceImpl<LinkMapper, ShortLinkDO> i
     @Override
     public void restoreUrl(String shortUrl, HttpServletRequest request, HttpServletResponse response) throws IOException {
         String serverName = request.getServerName();
-        String fullShortUri = serverName+ "/"+shortUrl;
+        String fullShortUrl = serverName+ "/"+shortUrl;
 
-        String originalUrl = stringRedisTemplate.opsForValue().get(RedisKeyConstant.GOTO_SHORT_LINK_KEY + fullShortUri);//尝试从Redis中获取原始链接，如果存在则重定向
+        String originalUrl = stringRedisTemplate.opsForValue().get(RedisKeyConstant.GOTO_SHORT_LINK_KEY + fullShortUrl);//尝试从Redis中获取原始链接，如果存在则重定向
 
         if (StrUtil.isNotBlank(originalUrl)) { //弱redis缓存中存在查询的链接,则重定向
             ((HttpServletResponse) response).sendRedirect(originalUrl);
@@ -199,36 +204,36 @@ public class ShortLinkServiceImpl extends ServiceImpl<LinkMapper, ShortLinkDO> i
         //若Redis中不存在链接,则尝试从数据库中获取原始链接
         //该锁是用来减少缓存击穿的,当多个请求同时发现缓存不存在时, 只有一个请求能获得锁去查数据库
         //其他请求等待锁释放后，通过"双重检查"直接从缓存获取
-        RLock lock = redissonClient.getLock(String.format(RedisKeyConstant.LOCK_GOTO_SHORT_LINK_KEY, fullShortUri));
+        RLock lock = redissonClient.getLock(String.format(RedisKeyConstant.LOCK_GOTO_SHORT_LINK_KEY, fullShortUrl));
         lock.lock();
            try {
-               originalUrl = stringRedisTemplate.opsForValue().get(RedisKeyConstant.GOTO_SHORT_LINK_KEY + fullShortUri);//再次尝试从Redis中获取原始链接，如果存在则重定向
+               originalUrl = stringRedisTemplate.opsForValue().get(RedisKeyConstant.GOTO_SHORT_LINK_KEY + fullShortUrl);//再次尝试从Redis中获取原始链接，如果存在则重定向
                if (StrUtil.isNotBlank(originalUrl)) { //如果Redis缓存中存在查询的链接,则重定向
                    response.sendRedirect(originalUrl);
                    return;
                }
-               boolean isContains = shortUriCreateCachePenetrationBloomFilter.contains(fullShortUri);
+               boolean isContains = shortUriCreateCachePenetrationBloomFilter.contains(fullShortUrl);
                if (!isContains) {
                    return;
                }
 
                LambdaQueryWrapper<ShortLinkGotoDO> linkGotoQueryWrapper = Wrappers.lambdaQuery(ShortLinkGotoDO.class)
-                       .eq(ShortLinkGotoDO::getFullShortUrl, fullShortUri);
+                       .eq(ShortLinkGotoDO::getFullShortUrl, fullShortUrl);
                ShortLinkGotoDO shortLinkGotoDO = shortLinkGotoMapper.selectOne(linkGotoQueryWrapper); //根据传进来的完整短链接在Goto表中查询对应的行
                if (shortLinkGotoDO == null) {
-                   stringRedisTemplate .opsForValue().set(String.format(RedisKeyConstant.GOTO_SHORT_LINK_KEY, fullShortUri), "-",30, TimeUnit.MINUTES);//在数据库未查询到对应的链接,将该次请求缓存进Redis,且值为"-"(可以认为是空值),防止缓存穿透
+                   stringRedisTemplate .opsForValue().set(String.format(RedisKeyConstant.GOTO_SHORT_LINK_KEY, fullShortUrl), "-",30, TimeUnit.MINUTES);//在数据库未查询到对应的链接,将该次请求缓存进Redis,且值为"-"(可以认为是空值),防止缓存穿透
                    throw new ServiceException("短链接不存在");
                }
 
                LambdaQueryWrapper<ShortLinkDO> queryWrapper = Wrappers.lambdaQuery(ShortLinkDO.class)
                        .eq(ShortLinkDO::getGid, shortLinkGotoDO.getGid()) //根据Goto表中查到的数据锁定其对应的Gid,然后根据这个Gid去数据库中查询对应的原始链接
-                       .eq(ShortLinkDO::getFullShortUrl, fullShortUri)
+                       .eq(ShortLinkDO::getFullShortUrl, fullShortUrl)
                        .eq(ShortLinkDO::getDelFlag, 0)
                        .eq(ShortLinkDO::getEnableStatus, 0);
                ShortLinkDO shortLinkDO = baseMapper.selectOne(queryWrapper);
 
                if (shortLinkDO != null) { //如果数据库中存在这条数据,并且经过第一个if判断后,可知redis中没有该数据,那么则将原始链接写入Redis缓存中,并重定向
-                   stringRedisTemplate.opsForValue().set(String.format(RedisKeyConstant.GOTO_SHORT_LINK_KEY, fullShortUri), shortLinkDO.getOriginUrl());
+                   stringRedisTemplate.opsForValue().set(String.format(RedisKeyConstant.GOTO_SHORT_LINK_KEY, fullShortUrl), shortLinkDO.getOriginUrl());
                    response.sendRedirect(shortLinkDO.getOriginUrl());
                }
            } finally {
