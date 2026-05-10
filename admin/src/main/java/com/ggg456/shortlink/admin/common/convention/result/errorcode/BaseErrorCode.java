@@ -28,7 +28,16 @@ public enum BaseErrorCode implements IErrorCode {
     SERVICE_TIMEOUT_ERROR("B000100", "系统执行超时"),
 
     // ========== 一级宏观错误码 调用第三方服务出错 ==========
-    REMOTE_ERROR("C000001", "调用第三方服务出错");
+    REMOTE_ERROR("C000001", "调用第三方服务出错"),
+
+    // ========== 二级宏观错误码 URL格式及请求参数错误 ==========
+    URL_FORMAT_ERROR("A000300", "URL格式不合法"),
+    DOMAIN_RESOLVE_ERROR("A000400", "域名解析失败"),
+
+    // ========== 二级宏观错误码 调用第三方服务出错（细分） ==========
+    REMOTE_CONNECTION_REFUSED_ERROR("C000100", "远程服务连接被拒绝"),
+    REMOTE_TIMEOUT_ERROR("C000101", "远程调用超时"),
+    REMOTE_HTTP_STATUS_ERROR("C000102", "远程服务返回异常状态码");
 
     private final String code;
 
