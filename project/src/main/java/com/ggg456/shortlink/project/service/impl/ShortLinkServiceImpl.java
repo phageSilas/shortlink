@@ -26,6 +26,10 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.redisson.api.RBloomFilter;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
@@ -57,7 +61,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<LinkMapper, ShortLinkDO> i
      * @return 短链接创建结果
      */
     @Override
-    public ShortLinkCreateRespDTO createShortLink(ShortLinkCreateReqDTO reqParam) {
+    public ShortLinkCreateRespDTO createShortLink(ShortLinkCreateReqDTO reqParam) throws IOException {
         String shortLinkSuffix = generateSuffix(reqParam);// 生成短链接后缀
         String fullShortUrl = reqParam.getDomain() + "/" + shortLinkSuffix;// 生成完整的短链接
 
@@ -73,6 +77,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<LinkMapper, ShortLinkDO> i
                 .shortUri(shortLinkSuffix)
                 .enableStatus(0)
                 .createdType(reqParam.getCreatedType())
+                .favicon(getFavicon(reqParam.getOriginUrl())) //TODO 获取 favicon
                 .build();
        // ShortLinkDO shortLinkDO = BeanUtil.toBean(reqParam, ShortLinkDO.class); // 将请求参数转换为DO//  shortLinkDO.setFullShortUrl(fullShortUrl); // 设置完整的短链接
       //  shortLinkDO.setShortUri(shortLinkSuffix); // 设置短链接后缀
@@ -286,6 +291,31 @@ public class ShortLinkServiceImpl extends ServiceImpl<LinkMapper, ShortLinkDO> i
         return shortUri;
         //因为sql的默认编码不区分大小写,所以这里需要在数据库中(查询控制台)将短链接后缀的编码设置为utf8_bin
         //ALTER TABLE t_link MODIFY short_uri VARCHAR(8) CHARACTER SET utf8 COLLATE utf8_bin;
+    }
+
+    public String getFavicon(String url) throws IOException {
+        // 1. 获取网页并解析
+        Document doc = Jsoup.connect(url)
+                .timeout(5000)
+                .userAgent("Mozilla/5.0")
+                .get();
+
+        // 2. 查找 <link rel="icon"> (包括 "shortcut icon")
+        Elements iconLinks = doc.head().select("link[href]");
+        for (Element link : iconLinks) {
+            String rel = link.attr("rel").toLowerCase();
+            if (rel.contains("icon")) {
+                String href = link.attr("abs:href"); // Jsoup 自动处理相对路径 -> 绝对路径
+                if (!href.isEmpty()) {
+                    return href;
+                }
+            }
+        }
+
+        // 3. 未找到时，回退到 /favicon.ico
+        // 使用当前 URL 的协议、主机、端口拼接 /favicon.ico
+        String baseUrl = doc.location(); // 最终请求后的真实 URL（避免重定向问题）
+        return baseUrl.replaceAll("/$", "") + "/favicon.ico";
     }
 
 
